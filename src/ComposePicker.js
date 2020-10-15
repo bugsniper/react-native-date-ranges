@@ -36,9 +36,7 @@ export default class ComposePicker extends Component {
       endDate: null,
       date: new Date(),
       focus: 'startDate',
-      currentDate: moment(),
-      textStartDate: 'Start Date',
-      textEndDate: 'End Date'
+      currentDate: moment()
     };
   }
   isDateBlocked = date => {
@@ -99,25 +97,31 @@ export default class ComposePicker extends Component {
     }
   };
   getTitleElement() {
-    const { placeholder, customStyles = {}, allowFontScaling } = this.props;
+    const { placeholder, customTextEle, customStyles = {}, allowFontScaling } = this.props;
     const showContent = this.state.showContent;
     if (!showContent && placeholder) {
+      if (customTextEle) {
+        return customTextEle([styles.placeholderText, customStyles.placeholderText], placeholder);
+      }
       return (
-        <Text
-          allowFontScaling={allowFontScaling}
-          style={[styles.placeholderText, customStyles.placeholderText]}
-        >
-          {placeholder}
-        </Text>
+          <Text
+              allowFontScaling={allowFontScaling}
+              style={[styles.placeholderText, customStyles.placeholderText]}
+          >
+            {placeholder}
+          </Text>
       );
     }
+    if (customTextEle) {
+      return customTextEle([styles.contentText, customStyles.contentText], this.state.selected);
+    }
     return (
-      <Text
-        allowFontScaling={allowFontScaling}
-        style={[styles.contentText, customStyles.contentText]}
-      >
-        {this.state.selected}
-      </Text>
+        <Text
+            allowFontScaling={allowFontScaling}
+            style={[styles.contentText, customStyles.contentText]}
+        >
+          {this.state.selected}
+        </Text>
     );
   }
 
@@ -128,18 +132,18 @@ export default class ComposePicker extends Component {
       return customButton(this.onConfirm);
     }
     return (
-      <TouchableHighlight
-        underlayColor={'transparent'}
-        onPress={this.onConfirm}
-        style={[
-          { width: '80%', marginHorizontal: '3%' },
-          this.props.ButtonStyle
-        ]}
-      >
-        <Text style={[{ fontSize: 20 }, this.props.ButtonTextStyle]}>
-          {this.props.ButtonText ? this.props.ButtonText : '送出'}
-        </Text>
-      </TouchableHighlight>
+        <TouchableHighlight
+            underlayColor={'transparent'}
+            onPress={this.onConfirm}
+            style={[
+              { width: '80%', marginHorizontal: '3%' },
+              this.props.ButtonStyle
+            ]}
+        >
+          <Text style={[{ fontSize: 20 }, this.props.ButtonTextStyle]}>
+            {this.props.ButtonText ? this.props.ButtonText : '送出'}
+          </Text>
+        </TouchableHighlight>
     );
   };
 
@@ -151,63 +155,61 @@ export default class ComposePicker extends Component {
     style = { ...style, ...this.props.style };
 
     return (
-      <TouchableHighlight
-        underlayColor={'transparent'}
-        onPress={() => {
-          this.setModalVisible(true);
-        }}
-        style={[
-          { width: '100%', height: '100%', justifyContent: 'center' },
-          style
-        ]}
-      >
-        <View>
+        <TouchableHighlight
+            underlayColor={'transparent'}
+            onPress={() => {
+              this.setModalVisible(true);
+            }}
+            style={[
+              { width: '100%', height: '100%', justifyContent: 'center' },
+              style
+            ]}
+        >
           <View>
-            <View style={[customStyles.contentInput, styles.contentInput]}>
-              {this.getTitleElement()}
+            <View>
+              <View style={[customStyles.contentInput, styles.contentInput]}>
+                {this.getTitleElement()}
+              </View>
             </View>
+            <Modal
+                animationType="slide"
+                onRequestClose={() => this.setModalVisible(false)}
+                transparent={false}
+                visible={this.state.modalVisible}
+            >
+              <View stlye={{ flex: 1, flexDirection: 'column' }}>
+                <View style={{ height: '90%' }}>
+                  <DateRange
+                      headFormat={this.props.headFormat}
+                      customStyles={customStyles}
+                      markText={this.props.markText}
+                      onDatesChange={this.onDatesChange}
+                      isDateBlocked={this.isDateBlocked}
+                      startDate={this.state.startDate}
+                      endDate={this.state.endDate}
+                      focusedInput={this.state.focus}
+                      selectedBgColor={this.props.selectedBgColor || undefined}
+                      selectedTextColor={this.props.selectedTextColor || undefined}
+                      mode={this.props.mode || 'single'}
+                      currentDate={this.state.currentDate}
+                  />
+                </View>
+                <View
+                    style={{
+                      paddingBottom: '5%',
+                      width: '100%',
+                      height: '10%',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }}
+                >
+                  {this.renderButton()}
+                </View>
+              </View>
+            </Modal>
           </View>
-          <Modal
-            animationType="slide"
-            onRequestClose={() => this.setModalVisible(false)}
-            transparent={false}
-            visible={this.state.modalVisible}
-          >
-            <View stlye={{ flex: 1, flexDirection: 'column' }}>
-              <View style={{ height: '90%' }}>
-                <DateRange
-                  headFormat={this.props.headFormat}
-                  customStyles={customStyles}
-                  markText={this.props.markText}
-                  onDatesChange={this.onDatesChange}
-                  isDateBlocked={this.isDateBlocked}
-                  startDate={this.state.startDate}
-                  endDate={this.state.endDate}
-                  focusedInput={this.state.focus}
-                  selectedBgColor={this.props.selectedBgColor || undefined}
-                  selectedTextColor={this.props.selectedTextColor || undefined}
-                  mode={this.props.mode || 'single'}
-                  currentDate={this.state.currentDate}
-                  textStartDate={this.state.textStartDate}
-                  textEndDate={this.state.textEndDate}
-                />
-              </View>
-              <View
-                style={{
-                  paddingBottom: '5%',
-                  width: '100%',
-                  height: '10%',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-              >
-                {this.renderButton()}
-              </View>
-            </View>
-          </Modal>
-        </View>
-      </TouchableHighlight>
+        </TouchableHighlight>
     );
   }
 }
